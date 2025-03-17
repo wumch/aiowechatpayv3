@@ -15,13 +15,13 @@ async def mch_transfer_bills(self, out_bill_no, transfer_scene_id, openid, trans
     :param appid: 应用ID，可不填，默认传入初始化时的appid，示例值:'wx1234567890abcdef'
     :param notify_url: 通知地址，异步接收微信支付结果通知的回调地址，示例值:'https://www.weixin.qq.com/wxpay/pay.php'
     """
-    params={}
+    params = {}
     if out_bill_no:
-        params.update({'out_bill_no':out_bill_no})
+        params['out_bill_no'] = out_bill_no
     else:
         raise Exception('out_batch_no is not assigned')
     if transfer_scene_id:
-        params.update({'transfer_scene_id':transfer_scene_id})
+        params['transfer_scene_id'] = transfer_scene_id
     else:
         raise Exception('transfer_scene_id is not assigned')
     if openid:
@@ -29,25 +29,28 @@ async def mch_transfer_bills(self, out_bill_no, transfer_scene_id, openid, trans
     else:
         raise Exception('openid is not assigned')
     if transfer_amount:
-        params.update({'transfer_amount':transfer_amount})
+        params['transfer_amount'] = transfer_amount
     else:
         raise Exception('transfer_amount is not assigned')
     if transfer_remark:
-        params.update({'transfer_remark':transfer_remark})
+        params['transfer_remark'] = transfer_remark
     else:
         raise Exception('transfer_remark is not assigned')
     cipher_data = False
     if user_name and transfer_amount >= 30:
-        params.update({'user_name':self._core.encrypt(user_name)})
+        params['user_name'] = self._core.encrypt(user_name)
         cipher_data = True
     if transfer_amount >= 200000 and not user_name:
         raise Exception('user_name is not assigned')
     if user_recv_perception:
-        params.update({'user_recv_perception':user_recv_perception})
+        params['user_recv_perception'] = user_recv_perception
     if transfer_scene_report_infos:
-        params.update({'transfer_scene_report_infos':transfer_scene_report_infos})
-    params.update({'appid': appid or self._appid})
-    params.update({'notify_url': notify_url or self._notify_url})
+        params['transfer_scene_report_infos'] = transfer_scene_report_infos
+    params['appid'] = appid or self._appid
+    if notify_url is None:
+        notify_url = self._notify_url
+    if notify_url:
+        params['notify_url'] = notify_url
     path = '/v3/fund-app/mch-transfer/transfer-bills'
     return await self._core.async_request(path, method=RequestType.POST, data=params, cipher_data=cipher_data)
 
