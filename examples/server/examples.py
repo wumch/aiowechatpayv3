@@ -9,7 +9,7 @@ import uuid
 
 from flask import Flask, jsonify, request
 
-from wechatpayv3 import WeChatPay, WeChatPayType
+from aiowechatpayv3 import WeChatPay, WeChatPayType
 
 # 微信支付商户号（直连模式）或服务商商户号（服务商模式，即sp_mchid)
 MCHID = '1234567890'
