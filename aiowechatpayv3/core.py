@@ -136,6 +136,8 @@ class Core():
         if self._public_key_id or cipher_data:
             wechatpay_serial = self._public_key_id if self._public_key_id else hex(self._last_certificate().serial_number)[2:].upper()
             headers.update({'Wechatpay-Serial': wechatpay_serial})
+        # NOTE: 为保证签名时用的`data`与请求body一致，`data`只能做一次json.dumps
+        data = json.dumps(data) if data else None
         authorization = build_authorization(
             path,
             method.value,
@@ -149,14 +151,16 @@ class Core():
             self._logger.debug('Request type: %s' % method.value)
             self._logger.debug('Request headers: %s' % headers)
             self._logger.debug('Request params: %s' % data)
+
+        # NOTE: data参数传入序列化的`data`，避免重复json.dumps出的结果与签名时的`data`不一致
         if method == RequestType.GET:
             response = await self._client.get(url=self._gate_way + path, headers=headers, timeout=self._timeout)
         elif method == RequestType.POST:
-            response = await self._client.post(url=self._gate_way + path, json=None if files else data, data=data if files else None, headers=headers, files=files, timeout=self._timeout)
+            response = await self._client.post(url=self._gate_way + path, data=data, headers=headers, files=files, timeout=self._timeout)
         elif method == RequestType.PATCH:
-            response = await self._client.patch(url=self._gate_way + path, json=data, headers=headers, timeout=self._timeout)
+            response = await self._client.patch(url=self._gate_way + path, data=data, headers=headers, timeout=self._timeout)
         elif method == RequestType.PUT:
-            response = await self._client.put(url=self._gate_way + path, json=data, headers=headers, timeout=self._timeout)
+            response = await self._client.put(url=self._gate_way + path, data=data, headers=headers, timeout=self._timeout)
         elif method == RequestType.DELETE:
             response = await self._client.delete(url=self._gate_way + path, headers=headers, timeout=self._timeout)
         else:
