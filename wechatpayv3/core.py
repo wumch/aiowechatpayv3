@@ -5,6 +5,7 @@ import os
 from datetime import datetime, timezone
 
 import requests
+from httpx import AsyncClient
 
 from .type import RequestType, SignType
 from .utils import (aes_decrypt, build_authorization, hmac_sign, load_public_key,
@@ -30,6 +31,7 @@ class Core():
             raise Exception('public_key_id or public_key is not assigned.')
         if not self._public_key:
             self._init_certificates()
+        self._client: AsyncClient = AsyncClient(proxy=self._proxy, timeout=self._timeout)
 
     def _update_certificates(self):
         path = '/v3/certificates'
@@ -123,6 +125,50 @@ class Core():
         if not rsa_verify(timestamp, nonce, body, signature, public_key):
             return False
         return True
+
+    async def async_request(self, path, method=RequestType.GET, data=None, skip_verify=False, sign_data=None, files=None, cipher_data=False, headers={}):
+        if files:
+            headers.update({'Content-Type': 'multipart/form-data'})
+        else:
+            headers.update({'Content-Type': 'application/json'})
+        headers.update({'Accept': 'application/json'})
+        headers.update({'User-Agent': 'wechatpay v3 api python sdk(https://github.com/minibear2021/wechatpayv3)'})
+        if self._public_key_id or cipher_data:
+            wechatpay_serial = self._public_key_id if self._public_key_id else hex(self._last_certificate().serial_number)[2:].upper()
+            headers.update({'Wechatpay-Serial': wechatpay_serial})
+        authorization = build_authorization(
+            path,
+            method.value,
+            self._mchid,
+            self._cert_serial_no,
+            self._private_key,
+            data=sign_data if sign_data else data)
+        headers.update({'Authorization': authorization})
+        if self._logger:
+            self._logger.debug('Request url: %s' % self._gate_way + path)
+            self._logger.debug('Request type: %s' % method.value)
+            self._logger.debug('Request headers: %s' % headers)
+            self._logger.debug('Request params: %s' % data)
+        if method == RequestType.GET:
+            response = await self._client.get(url=self._gate_way + path, headers=headers, timeout=self._timeout)
+        elif method == RequestType.POST:
+            response = await self._client.post(url=self._gate_way + path, json=None if files else data, data=data if files else None, headers=headers, files=files, timeout=self._timeout)
+        elif method == RequestType.PATCH:
+            response = await self._client.patch(url=self._gate_way + path, json=data, headers=headers, timeout=self._timeout)
+        elif method == RequestType.PUT:
+            response = await self._client.put(url=self._gate_way + path, json=data, headers=headers, timeout=self._timeout)
+        elif method == RequestType.DELETE:
+            response = await self._client.delete(url=self._gate_way + path, headers=headers, timeout=self._timeout)
+        else:
+            raise Exception('wechatpayv3 does no support this request type.')
+        if self._logger:
+            self._logger.debug('Response status code: %s' % response.status_code)
+            self._logger.debug('Response headers: %s' % response.headers)
+            self._logger.debug('Response content: %s' % response.text)
+        if response.status_code in range(200, 300) and not skip_verify:
+            if not self._verify_signature(response.headers, response.text):
+                raise Exception('failed to verify the signature')
+        return response.status_code, response.text if 'application/json' in response.headers.get('Content-Type') else response.content
 
     def request(self, path, method=RequestType.GET, data=None, skip_verify=False, sign_data=None, files=None, cipher_data=False, headers={}):
         if files:

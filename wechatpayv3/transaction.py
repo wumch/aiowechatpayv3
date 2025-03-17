@@ -3,7 +3,7 @@
 from .type import RequestType, WeChatPayType
 
 
-def pay(self,
+async def pay(self,
         description,
         out_trade_no,
         amount,
@@ -119,10 +119,10 @@ def pay(self,
             raise Exception('pay_type is not assigned.')
     if support_fapiao:
         params.update({'support_fapiao': support_fapiao})
-    return self._core.request(path, method=RequestType.POST, data=params)
+    return await self._core.async_request(path, method=RequestType.POST, data=params)
 
 
-def close(self, out_trade_no, mchid=None, sub_mchid=None):
+async def close(self, out_trade_no, mchid=None, sub_mchid=None):
     """关闭订单
     :param out_trade_no: 商户订单号，示例值:'1217752501201407033233368018'
     :param mchid: 微信支付商户号，可不传，默认传入初始化的mchid。示例值:'987654321'
@@ -143,10 +143,10 @@ def close(self, out_trade_no, mchid=None, sub_mchid=None):
         else:
             raise Exception('out_trade_no is not assigned.')
         params = {'mchid': mchid or self._mchid}
-    return self._core.request(path, method=RequestType.POST, data=params)
+    return await self._core.async_request(path, method=RequestType.POST, data=params)
 
 
-def query(self, transaction_id=None, out_trade_no=None, mchid=None, sub_mchid=None):
+async def query(self, transaction_id=None, out_trade_no=None, mchid=None, sub_mchid=None):
     """查询订单
     :param transaction_id: 微信支付订单号，示例值:1217752501201407033233368018
     :param out_trade_no: 商户订单号，示例值:1217752501201407033233368018
@@ -169,10 +169,10 @@ def query(self, transaction_id=None, out_trade_no=None, mchid=None, sub_mchid=No
         else:
             raise Exception('transaction_id out_trade_no is not assigned.')
         path = '%s?mchid=%s' % (path, mchid or self._mchid)
-    return self._core.request(path)
+    return await self._core.async_request(path)
 
 
-def refund(self,
+async def refund(self,
            out_refund_no,
            amount,
            transaction_id=None,
@@ -222,10 +222,10 @@ def refund(self,
         else:
             raise Exception('sub_mchid is not assigned.')
     path = '/v3/refund/domestic/refunds'
-    return self._core.request(path, method=RequestType.POST, data=params)
+    return await self._core.async_request(path, method=RequestType.POST, data=params)
 
 
-def query_refund(self, out_refund_no, sub_mchid=None):
+async def query_refund(self, out_refund_no, sub_mchid=None):
     """查询单笔退款
     :param out_refund_no: 商户退款单号，示例值:'1217752501201407033233368018'
     :param sub_mchid: (服务商模式)子商户的商户号，由微信支付生成并下发。示例值:'1900000109'
@@ -236,10 +236,10 @@ def query_refund(self, out_refund_no, sub_mchid=None):
             path = '%s?sub_mchid=%s' % (path, sub_mchid)
         else:
             raise Exception('sub_mchid is not assigned.')
-    return self._core.request(path)
+    return await self._core.async_request(path)
 
 
-def trade_bill(self, bill_date, bill_type='ALL', tar_type='GZIP', sub_mchid=None):
+async def trade_bill(self, bill_date, bill_type='ALL', tar_type='GZIP', sub_mchid=None):
     """申请交易账单
     :param bill_date: 账单日期，示例值:'2019-06-11'
     :param bill_type: 账单类型, 默认值:'ALL'
@@ -249,10 +249,10 @@ def trade_bill(self, bill_date, bill_type='ALL', tar_type='GZIP', sub_mchid=None
     path = '/v3/bill/tradebill?bill_date=%s&bill_type=%s&tar_type=%s' % (bill_date, bill_type, tar_type)
     if self._partner_mode and sub_mchid:
         path = '%s&sub_mchid=%s' % (path, sub_mchid)
-    return self._core.request(path)
+    return await self._core.async_request(path)
 
 
-def fundflow_bill(self, bill_date, account_type='BASIC', tar_type='GZIP'):
+async def fundflow_bill(self, bill_date, account_type='BASIC', tar_type='GZIP'):
     """申请资金账单
     :param bill_date: 账单日期，示例值:'2019-06-11'
     :param account_type: 资金账户类型, 默认值:'BASIC'，基本账户, 可选:'OPERATION'，运营账户；'FEES'，手续费账户
@@ -261,10 +261,10 @@ def fundflow_bill(self, bill_date, account_type='BASIC', tar_type='GZIP'):
     if not bill_date:
         raise Exception('bill_date is not assigned.')
     path = '/v3/bill/fundflowbill?bill_date=%s&account_type=%s&tar_type=%s' % (bill_date, account_type, tar_type)
-    return self._core.request(path)
+    return await self._core.async_request(path)
 
 
-def submch_fundflow_bill(self, sub_mchid, bill_date, account_type, algorithm='AEAD_AES_256_GCM', tar_type=None):
+async def submch_fundflow_bill(self, sub_mchid, bill_date, account_type, algorithm='AEAD_AES_256_GCM', tar_type=None):
     """申请单个子商户资金账单
     :param sub_mchid: 子商户号，示例值:'19000000001'
     :param bill_date: 账单日期，格式YYYY-MM-DD，示例值:'2019-06-11'
@@ -291,18 +291,18 @@ def submch_fundflow_bill(self, sub_mchid, bill_date, account_type, algorithm='AE
         raise Exception('algorithm is not assigned.')
     if tar_type:
         path += '&tar_type=%s' % tar_type
-    return self._core.request(path)
+    return await self._core.async_request(path)
 
 
-def download_bill(self, url):
+async def download_bill(self, url):
     """下载账单
     :param url: 账单下载地址，示例值:'https://api.mch.weixin.qq.com/v3/billdownload/file?token=xxx'
     """
     path = url[len(self._core._gate_way):] if url.startswith(self._core._gate_way) else url
-    return self._core.request(path, skip_verify=True)
+    return await self._core.async_request(path, skip_verify=True)
 
 
-def combine_pay(self,
+async def combine_pay(self,
                 combine_out_trade_no,
                 sub_orders,
                 scene_info=None,
@@ -362,10 +362,10 @@ def combine_pay(self,
         path = '/v3/combine-transactions/native'
     else:
         raise Exception('pay_type is not assigned.')
-    return self._core.request(path, method=RequestType.POST, data=params)
+    return await self._core.async_request(path, method=RequestType.POST, data=params)
 
 
-def combine_query(self, combine_out_trade_no):
+async def combine_query(self, combine_out_trade_no):
     """合单查询订单
     :param combine_out_trade_no: 合单商户订单号，示例值:P20150806125346
     """
@@ -375,10 +375,10 @@ def combine_query(self, combine_out_trade_no):
     else:
         params.update({'combine_out_trade_no': combine_out_trade_no})
     path = '/v3/combine-transactions/out-trade-no/%s' % combine_out_trade_no
-    return self._core.request(path)
+    return await self._core.async_request(path)
 
 
-def combine_close(self, combine_out_trade_no, sub_orders, combine_appid=None):
+async def combine_close(self, combine_out_trade_no, sub_orders, combine_appid=None):
     """合单关闭订单
     :param combine_out_trade_no: 合单商户订单号，示例值:'P20150806125346'
     :param sub_orders: 子单信息, 示例值:[{'mchid': '1900000109', 'out_trade_no': '20150806125346'}]
@@ -393,10 +393,10 @@ def combine_close(self, combine_out_trade_no, sub_orders, combine_appid=None):
     else:
         params.update({'sub_orders': sub_orders})
     path = '/v3/combine-transactions/out-trade-no/%s/close' % combine_out_trade_no
-    return self._core.request(path, method=RequestType.POST, data=params)
+    return await self._core.async_request(path, method=RequestType.POST, data=params)
 
 
-def abnormal_refund(self, refund_id, out_refund_no, type, bank_type=None, bank_account=None, real_name=None, sub_mchid=None):
+async def abnormal_refund(self, refund_id, out_refund_no, type, bank_type=None, bank_account=None, real_name=None, sub_mchid=None):
     """发起异常退款
     :param refund_id: 微信退款单号，退款单的主键，唯一定义此资源的标识。
     :param out_refund_no: 商户退款单号，商户系统内部的退款单号，商户系统内部唯一，只能是数字、大小写字母_-|*@ ，同一退款单号多次请求只退一笔。
@@ -428,9 +428,9 @@ def abnormal_refund(self, refund_id, out_refund_no, type, bank_type=None, bank_a
     if real_name:
         params.update({'real_name': self._core.encrypt(real_name)})
         cipher_data = True
-    return self._core.request(path, method=RequestType.POST, data=params, cipher_data=cipher_data)
+    return await self._core.async_request(path, method=RequestType.POST, data=params, cipher_data=cipher_data)
 
-def codepay_reverse(self, out_trade_no, appid=None, mchid=None, sub_appid=None, sub_mchid=None):
+async def codepay_reverse(self, out_trade_no, appid=None, mchid=None, sub_appid=None, sub_mchid=None):
     """撤销付款码支付订单
     :警告：付款码支付订单如果用户已经付款，调用撤销接口会将资金退回给用户。:
     :return code, message:
@@ -455,4 +455,4 @@ def codepay_reverse(self, out_trade_no, appid=None, mchid=None, sub_appid=None, 
         params.update({'appid': appid or self._appid})
         params.update({'mchid': mchid or self._mchid})
         path = f'/v3/pay/transactions/out-trade-no/{out_trade_no}/reverse'
-    return self._core.request(path, method=RequestType.POST, data=params)
+    return await self._core.async_request(path, method=RequestType.POST, data=params)

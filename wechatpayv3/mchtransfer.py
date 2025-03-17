@@ -2,7 +2,7 @@
 
 from .type import RequestType
 
-def mch_transfer_bills(self, out_bill_no, transfer_scene_id, openid, transfer_amount, transfer_remark, user_name=None, user_recv_perception=None, transfer_scene_report_infos=[], appid=None, notify_url=None):
+async def mch_transfer_bills(self, out_bill_no, transfer_scene_id, openid, transfer_amount, transfer_remark, user_name=None, user_recv_perception=None, transfer_scene_report_infos=[], appid=None, notify_url=None):
     """发起转账
     :param out_bill_no: 商户单号，商户系统内部的商家单号，要求此参数只能由数字、大小写字母组成，在商户系统内部唯一，示例值：'plfk2020042013'
     :param transfer_scene_id: 转账场景ID，示例值:'1001'
@@ -49,9 +49,9 @@ def mch_transfer_bills(self, out_bill_no, transfer_scene_id, openid, transfer_am
     params.update({'appid': appid or self._appid})
     params.update({'notify_url': notify_url or self._notify_url})
     path = '/v3/fund-app/mch-transfer/transfer-bills'
-    return self._core.request(path, method=RequestType.POST, data=params, cipher_data=cipher_data)
+    return await self._core.async_request(path, method=RequestType.POST, data=params, cipher_data=cipher_data)
 
-def mch_transfer_bills_cancel(self, out_bill_no):
+async def mch_transfer_bills_cancel(self, out_bill_no):
     """撤销转账
     :param out_bill_no: 商户单号，商户系统内部的商家单号，要求此参数只能由数字、大小写字母组成，在商户系统内部唯一，示例值：'plfk2020042013'
     """
@@ -59,9 +59,9 @@ def mch_transfer_bills_cancel(self, out_bill_no):
         path = f'/v3/fund-app/mch-transfer/transfer-bills/out-bill-no/{out_bill_no}/cancel'
     else:
         raise Exception('out_bill_no is not assigned')
-    return self._core.request(path, method=RequestType.POST)
+    return await self._core.async_request(path, method=RequestType.POST)
 
-def mch_transfer_bills_query(self, out_bill_no=None, transfer_bill_no=None):
+async def mch_transfer_bills_query(self, out_bill_no=None, transfer_bill_no=None):
     """查询转账单
     :param out_bill_no: 商户单号，商户系统内部的商家单号，要求此参数只能由数字、大小写字母组成，在商户系统内部唯一，示例值：'plfk2020042013'
     :param transfer_bill_no: 微信转账单号，微信商家转账系统返回的唯一标识，示例值: '1330000071100999991182020050700019480001'
@@ -72,9 +72,9 @@ def mch_transfer_bills_query(self, out_bill_no=None, transfer_bill_no=None):
         path = f'/v3/fund-app/mch-transfer/transfer-bills/out-bill-no/{out_bill_no}'
     else:
         path = f'/v3/fund-app/mch-transfer/transfer-bills/transfer-bill-no/{transfer_bill_no}'
-    return self._core.request(path)
+    return await self._core.async_request(path)
 
-def mch_transfer_elecsign(self, out_bill_no=None, transfer_bill_no=None):
+async def mch_transfer_elecsign(self, out_bill_no=None, transfer_bill_no=None):
     """申请电子回单
     :param out_bill_no: 商户单号，商户系统内部的商家单号，要求此参数只能由数字、大小写字母组成，在商户系统内部唯一，示例值：'plfk2020042013'
     :param transfer_bill_no: 微信转账单号，微信商家转账系统返回的唯一标识，示例值: '1330000071100999991182020050700019480001'
@@ -88,9 +88,9 @@ def mch_transfer_elecsign(self, out_bill_no=None, transfer_bill_no=None):
     else:
         params.update({'transfer_bill_no':transfer_bill_no})
         path = '/v3/fund-app/mch-transfer/elecsign/transfer-bill-no'
-    return self._core.request(path, method=RequestType.POST, data=params)
+    return await self._core.async_request(path, method=RequestType.POST, data=params)
 
-def mch_transfer_elecsign_query(self, out_bill_no=None, transfer_bill_no=None):
+async def mch_transfer_elecsign_query(self, out_bill_no=None, transfer_bill_no=None):
     """查询电子回单
     :param out_bill_no: 商户单号，商户系统内部的商家单号，要求此参数只能由数字、大小写字母组成，在商户系统内部唯一，示例值：'plfk2020042013'
     :param transfer_bill_no: 微信转账单号，微信商家转账系统返回的唯一标识，示例值: '1330000071100999991182020050700019480001'
@@ -101,4 +101,4 @@ def mch_transfer_elecsign_query(self, out_bill_no=None, transfer_bill_no=None):
         path = f'/v3/fund-app/mch-transfer/elecsign/out-bill-no/{out_bill_no}'
     else:
         path = f'/v3/fund-app/mch-transfer/elecsign/transfer-bill-no/{transfer_bill_no}'
-    return self._core.request(path)
+    return self._core.async_request(path)

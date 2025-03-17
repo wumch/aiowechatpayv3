@@ -3,7 +3,7 @@
 from .type import RequestType
 
 
-def transfer_batch(self, out_batch_no, batch_name, batch_remark, total_amount, total_num, transfer_detail_list=[], appid=None, transfer_scene_id=None, notify_url=None):
+async def transfer_batch(self, out_batch_no, batch_name, batch_remark, total_amount, total_num, transfer_detail_list=[], appid=None, transfer_scene_id=None, notify_url=None):
     """发起商家转账
     :param out_batch_no: 商户系统内部的商家批次单号，要求此参数只能由数字、大小写字母组成，在商户系统内部唯一，示例值：'plfk2020042013'
     :param batch_name: 该笔批量转账的名称，示例值：'2019年1月深圳分部报销单'
@@ -51,10 +51,10 @@ def transfer_batch(self, out_batch_no, batch_name, batch_remark, total_amount, t
     if transfer_scene_id:
         params.update({'transfer_scene_id': transfer_scene_id})
     path = '/v3/transfer/batches'
-    return self._core.request(path, method=RequestType.POST, data=params, cipher_data=cipher_data)
+    return await self._core.async_request(path, method=RequestType.POST, data=params, cipher_data=cipher_data)
 
 
-def transfer_query_batchid(self, batch_id, need_query_detail=False, offset=0, limit=20, detail_status='ALL'):
+async def transfer_query_batchid(self, batch_id, need_query_detail=False, offset=0, limit=20, detail_status='ALL'):
     """微信批次单号查询批次单
     :param batch_id: 微信批次单号，微信商家转账系统返回的唯一标识，示例值：1030000071100999991182020050700019480001
     :param need_query_detail: 是否查询转账明细单，枚举值：true：是；false：否，默认否。
@@ -73,10 +73,10 @@ def transfer_query_batchid(self, batch_id, need_query_detail=False, offset=0, li
         path += '?need_query_detail=false'
     path += '&offset=%s' % offset
     path += '&limit=%s' % limit
-    return self._core.request(path)
+    return await self._core.async_request(path)
 
 
-def transfer_query_detail_id(self, batch_id, detail_id):
+async def transfer_query_detail_id(self, batch_id, detail_id):
     """微信明细单号查询明细单
     :param batch_id: 微信批次单号，微信商家转账系统返回的唯一标识，示例值：1030000071100999991182020050700019480001
     :param detail_id: 微信明细单号，微信支付系统内部区分转账批次单下不同转账明细单的唯一标识，示例值：1040000071100999991182020050700019500100
@@ -85,10 +85,10 @@ def transfer_query_detail_id(self, batch_id, detail_id):
         path = '/v3/transfer/batches/batch-id/%s/details/detail-id/%s' % (batch_id, detail_id)
     else:
         raise Exception('batch_id or detail_id is not assigned')
-    return self._core.request(path)
+    return await self._core.async_request(path)
 
 
-def transfer_query_out_batch_no(self, out_batch_no, need_query_detail=False, offset=0, limit=20, detail_status='ALL'):
+async def transfer_query_out_batch_no(self, out_batch_no, need_query_detail=False, offset=0, limit=20, detail_status='ALL'):
     """商家批次单号查询批次单
     :param out_batch_no: 商家批次单号，示例值：plfk2020042013
     :param need_query_detail: 是否查询转账明细单，枚举值：true：是；false：否，默认否。
@@ -107,10 +107,10 @@ def transfer_query_out_batch_no(self, out_batch_no, need_query_detail=False, off
         path += '?need_query_detail=false'
     path += '&offset=%s' % offset
     path += '&limit=%s' % limit
-    return self._core.request(path)
+    return await self._core.async_request(path)
 
 
-def transfer_query_out_detail_no(self, out_detail_no, out_batch_no):
+async def transfer_query_out_detail_no(self, out_detail_no, out_batch_no):
     """商家明细单号查询明细单
     :param out_detail_no: 商家明细单号，示例值：x23zy545Bd5436
     :param out_batch_no: 商家批次单号，示例值：plfk2020042013
@@ -119,10 +119,10 @@ def transfer_query_out_detail_no(self, out_detail_no, out_batch_no):
         path = '/v3/transfer/batches/out-batch-no/%s/details/out-detail-no/%s' % (out_batch_no, out_detail_no)
     else:
         raise Exception('out_detail_no or out_batch_no is not assigned')
-    return self._core.request(path)
+    return await self._core.async_request(path)
 
 
-def transfer_bill_receipt(self, out_batch_no):
+async def transfer_bill_receipt(self, out_batch_no):
     """转账电子回单申请受理
     :param out_batch_no: 商家批次单号，示例值：plfk2020042013
     """
@@ -132,10 +132,10 @@ def transfer_bill_receipt(self, out_batch_no):
     else:
         raise Exception('out_batch_no is assigned')
     path = '/v3/transfer/bill-receipt'
-    return self._core.request(path, method=RequestType.POST, params=params)
+    return await self._core.async_request(path, method=RequestType.POST, params=params)
 
 
-def transfer_query_bill_receipt(self, out_batch_no):
+async def transfer_query_bill_receipt(self, out_batch_no):
     """查询转账电子回单
     :param out_batch_no: 商家批次单号，示例值：plfk2020042013
     """
@@ -143,10 +143,10 @@ def transfer_query_bill_receipt(self, out_batch_no):
         path = '/v3/transfer/bill-receipt/%s' % out_batch_no
     else:
         raise Exception('out_batch_no is not assigned')
-    return self._core.request(path)
+    return await self._core.async_request(path)
 
 
-def transfer_detail_receipt(self, accept_type, out_detail_no, out_batch_no=None,):
+async def transfer_detail_receipt(self, accept_type, out_detail_no, out_batch_no=None,):
     """转账明细电子回单受理
     :param accept_type: 受理类型
     :param out_detail_no: 商家明细单号，示例值：x23zy545Bd5436
@@ -164,10 +164,10 @@ def transfer_detail_receipt(self, accept_type, out_detail_no, out_batch_no=None,
     if out_batch_no:
         params.update({'out_batch_no': out_batch_no})
     path = '/v3/transfer-detail/electronic-receipts'
-    return self._core.request(path, method=RequestType.POST, params=params)
+    return await self._core.async_request(path, method=RequestType.POST, params=params)
 
 
-def transfer_query_receipt(self, accept_type, out_detail_no, out_batch_no=None):
+async def transfer_query_receipt(self, accept_type, out_detail_no, out_batch_no=None):
     """查询转账明细电子回单受理结果
     :param accept_type: 受理类型
     :param out_detail_no: 商家明细单号，示例值：x23zy545Bd5436
@@ -183,4 +183,4 @@ def transfer_query_receipt(self, accept_type, out_detail_no, out_batch_no=None):
         raise Exception('out_detail_no is not assigned')
     if out_batch_no:
         path += '&out_batch_no=%s' % out_batch_no
-    return self._core_request(path)
+    return await self._core.async_request(path)
